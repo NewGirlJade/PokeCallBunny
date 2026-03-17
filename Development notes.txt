@@ -15,3 +15,15 @@ questions:
 	going to use the python wrapper PokeBase by Greg Hilmes
 	for my purposes, I could probably just build a json using pokeAPI for all the pokemon I need and then I wouldn't have to hit their servers.
 	App structure...
+
+
+	Things I'm probably going to have to learn in order to make this work:
+		How to play audio from python
+		(maybe) how to play audio pitchshifted
+		(maybe) how much to pitch-shift the audio
+		how to make a website with a python backend and/or
+		how to make a desktop app and/or
+		how to make an iphone app
+		how to use git better
+		! How to write tests in python? !
+		
