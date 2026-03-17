@@ -1,18 +1,17 @@
 questions:
-	Where do I store and serve the cry files from? I'm guessing it would just be easiest to store them in the repo but I definitely want them in a .gitignore file.
 	Do I want this to be a web app?
 	How to map the filenames to pokemon, especially where there are several calls per pokemon
 	What's the minimum viable product?
+		click a button, hear a random cry, click reveal, see the name. repeat.
 	What features would I like in the best case?
 		Pictures revealed along with name
 		multiple choice of any length or name input
 		score keeper and streak records
 		ability to pick which generations to test from
 		searchable list of all pokemon with each cry associated with each.
-	How does the pokeAPI work, and how do I want to interface with it?
-Wrapper libraries for pokeAPI:
-Python 3 with auto caching: PokeBase by Greg Hilmes
-https://github.com/GregHilmes/pokebase
-Python 2/3 with auto caching: Pokepy by Paul Hallett
-https://github.com/PokeAPI/pokepy
+		ability to make groups to compare similar sounding calls
+		add fainted cries (pitch shifted down)
+	PokeAPI - I think I know how it works, but using it effectively will take some practice and thought.
+	going to use the python wrapper PokeBase by Greg Hilmes
+	for my purposes, I could probably just build a json using pokeAPI for all the pokemon I need and then I wouldn't have to hit their servers.
 	App structure...
