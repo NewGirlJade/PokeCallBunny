@@ -1,0 +1,12 @@
+[project]
+name = "pokecallbunny"
+version = "0.1.0"
+description = "Memorize the Pokemon's Cries"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.135.1",
+    "pokebase>=1.4.1",
+    "pyogg>=0.6.14a1",
+    "pyopenal>=0.7.11a1",
+]
