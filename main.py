@@ -3,25 +3,41 @@ import time
 from random import randrange
 import pokebase as pb
 from pokebase import cache
+import requests
+import json
 
 
 def fetch_pokemon_cry(pokemon: str) -> str:
-    # downloads cries as needed from pokeAPI and returns the filepath where the cry has been cached```
+    """downloads cries as needed from pokeAPI and returns the filepath where the cry has been cached. Probably currently conflicts with audio_path()"""
     # just make it work with the default cry for now
     pass
 
 
 def prompt_loop():
-    # prints stuff to terminal and reads user input```
+    """prints stuff to terminal and reads user input"""
     # while !should_stop:
     # implement this one second
     pass
 
 
+def get_random_pokenumber() -> int:
+    """the get_random_pokenumber() function takes no arguments (currently) and returns a random pokemon's number from a pool of all current pokemon as fetched from PokeAPI"""
+    req = requests.get("https://pokeapi.co/api/v2/pokemon-species/?limit=1")
+    species = dict(json.loads(req.text))
+    return randrange(species["count"])
+
+
+# TODO: add optional arguments of generations to include and only return a random pokemon from those generations.
+
+
+def audio_path(poke_number: int) -> str:
+    """the audio_path() function takes a pokemon's national Pokedex number as an integer and returns a string corresponding to the soundfile of that pokemon's cry in the host filesystem"""
+    return "./audio/cries-main/cries/pokemon/latest/" + str(poke_number) + ".ogg"
+
+
 def play_cry(poke_number: int) -> None:
-    # implement this one first- one PR per function
-    audio_path = "./audio/cries-main/cries/pokemon/latest/" + str(poke_number) + ".ogg"
-    print(audio_path)
+    """The play_cry() function takes a pokemon's national Pokedex number and opens a PyOpenAL Source object in order to play the audio file."""
+    audio_path = audio_path(poke_number)
     audio = oalOpen(audio_path)
     audio.play()
     while audio.get_state() == AL_PLAYING:
@@ -35,13 +51,14 @@ def play_cry(poke_number: int) -> None:
 
 
 def cleanup() -> None:
+    """the oalQuit() function exits out of OpenAL and destroys all existing Sources and Buffers. It's strongly reccommended to call it before quitting the program (I'm guessing the OS would probably do this automatically but it never hurts to leave less to chance)"""
     oalQuit()
 
 
 def main():
     print("Hello from pokecallbunny!")
 
-    poke_number = randrange(1025)
+    poke_number = get_random_pokenumber()
     poke_name = str(pb.APIResource("pokemon", poke_number))
 
     play_cry(poke_number)
