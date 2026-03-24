@@ -30,15 +30,14 @@ def get_random_pokenumber() -> int:
 # TODO: add optional arguments of generations to include and only return a random pokemon from those generations.
 
 
-def audio_path(poke_number: int) -> str:
+def get_audio_path(poke_number: int) -> str:
     """the audio_path() function takes a pokemon's national Pokedex number as an integer and returns a string corresponding to the soundfile of that pokemon's cry in the host filesystem"""
     return "./audio/cries-main/cries/pokemon/latest/" + str(poke_number) + ".ogg"
 
 
 def play_cry(poke_number: int) -> None:
     """The play_cry() function takes a pokemon's national Pokedex number and opens a PyOpenAL Source object in order to play the audio file."""
-    audio_path = audio_path(poke_number)
-    audio = oalOpen(audio_path)
+    audio = oalOpen(get_audio_path(poke_number))
     audio.play()
     while audio.get_state() == AL_PLAYING:
         time.sleep(1)
