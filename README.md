@@ -25,22 +25,23 @@ questions:
 		ability to make groups to compare similar sounding calls
 		add fainted cries (pitch shifted down)
     spaced repitition
+		scoreboard on the right side or something.
 	PokeAPI - I think I know how it works, but using it effectively will take some practice and thought.
 	Going to start by using the python wrapper PokeBase by Greg Hilmes
 	eventually I'm going to take Ben's advice and switch to direct API calls to get more experience with those.
 	App structure...
 	Things I'm probably going to have to learn in order to make this work:
-		How to play audio from python
 		(maybe) how to play audio pitchshifted
 		(maybe) how much to pitch-shift the audio
 		how to make a website with a python backend
 		how to use git better
 		! How to write tests in python? !
     How to write a fun little program that runs my tests for me
-
-		To do next:
-        wireframe the website - diagram
-        pick out a tech stack for the app (vanilla HTML, python api framework (look at flask, fastAPI, dJango, others?))
-					- I'm leaning toward FastAPI (though Flask sounds pretty simple to use as well.)
-        add tooling around tests and dependencies (UV)
-        Done-List of dependencies (added to readme)
+	Settings menu ideas:
+		Reset streak
+		import/export streak
+		volume
+		prefer legacy, only legacy, only new versions
+		include fainted cries
+		ignore alternate forms
+		number of multiple choice options
