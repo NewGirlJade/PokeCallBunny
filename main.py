@@ -7,6 +7,11 @@ import requests
 import json
 
 
+class Context:
+    def __init__(self):
+        self.pokemon_count = fetch_pokemon_count()
+
+
 def get_audio_path(poke_number: int) -> str:
     """the audio_path() function takes a pokemon's national Pokedex number as an integer and returns a string corresponding to the soundfile of that pokemon's cry in the host filesystem"""
     return "./audio/cries-main/cries/pokemon/latest/" + str(poke_number) + ".ogg"
@@ -23,7 +28,7 @@ def play_cry(poke_number: int) -> None:
     audio = oalOpen(get_audio_path(poke_number))
     audio.play()
     while audio.get_state() == AL_PLAYING:
-        time.sleep(1)
+        time.sleep(0.01)
 
     # sourceStream = oalStream("/home/jayda/Source/PokeCallBunny/test_samples/25.ogg")
     # sourceStream.play()
@@ -32,23 +37,35 @@ def play_cry(poke_number: int) -> None:
     # time.sleep(5)
 
 
-def prompt_loop():
+def prompt_loop(context: Context):
     """prints stuff to terminal and reads user input"""
-    should_stop = 0
+    print(
+        "  Type a Pokemon's name or ID \n  [r/rand/random] for random \n  [q, quit, exit] to quit"
+    )
     while True:
-        print("type anything:")
-        directive = input()
-        print(directive.isdigit())
-        if directive.isdigit():
+        directive = input().lower()
+        if directive == "q" or directive == "quit" or directive == "exit":
+            break
+        elif directive.isdigit():
             directive = int(directive)
-            if directive > fetch_pokemon_count() or directive <= 0:
-                print("Unrecognized command. Please try again.")
+            if directive > context.pokemon_count or directive <= 0:
+                print(
+                    "That number doesn't represent a pokemon known to the scientific community yet. Please try again."
+                )
             else:
+                print("Loading...")
                 poke_name = str(pb.APIResource("pokemon", directive))
                 play_cry(directive)
-                print("That was the cry of " + poke_name)
-        break
-        # case "q" or "quit" or "exit" break
+                print("That was the cry of " + poke_name + " (#" + str(directive) + ")")
+        elif directive == "random" or directive == "rand" or directive == "r":
+            poke_number = gen_random_pokenumber(context)
+            poke_name = str(pb.APIResource("pokemon", poke_number))
+            play_cry(poke_number)
+            print("That was the cry of " + poke_name + " (#" + str(poke_number) + ")")
+        else:
+            print(
+                "Unrecognized command.\n  Type a Pokemon's name or ID \n  [r/rand/random] for random \n  [q, quit, exit] to quit"
+            )
 
 
 def fetch_pokemon_count() -> int:
@@ -59,9 +76,9 @@ def fetch_pokemon_count() -> int:
     return species["count"]
 
 
-def gen_random_pokenumber() -> int:
-    """the get_random_pokenumber() function takes no arguments (currently) and returns a random pokemon's number from a pool of all current pokemon as fetched from PokeAPI"""
-    return randrange(fetch_pokemon_count())
+def gen_random_pokenumber(context: Context) -> int:
+    """the get_random_pokenumber() function takes no arguments (currently) and returns a random pokemon's number from a pool of all current pokemon as fetched earlier from PokeAPI and stored in the context"""
+    return randrange(context.pokemon_count)
 
 
 # TODO: add optional arguments of generations to include and only return a random pokemon from those generations.
@@ -73,8 +90,9 @@ def cleanup() -> None:
 
 
 def main():
+    context = Context()
     print("Hello from pokecallbunny!")
-    prompt_loop()
+    prompt_loop(context)
     # poke_number = gen_random_pokenumber()
     # poke_name = str(pb.APIResource("pokemon", poke_number))
     # play_cry(poke_number)
