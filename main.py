@@ -1,10 +1,11 @@
 from openal import *
 import time
-from random import randrange
+import random  # import randrange, choice
 import pokebase as pb
 from pokebase import cache
 import requests
 import json
+import os, os.path
 
 
 class Context:
@@ -17,9 +18,13 @@ def get_audio_path(poke_number: int) -> str:
     return "./audio/cries-main/cries/pokemon/latest/" + str(poke_number) + ".ogg"
 
 
-def fetch_pokemon_cry(pokemon: str) -> str:
+def fetch_pokemon_cry_by_name(pokemon: str) -> str:
     """downloads cries as needed from pokeAPI and returns the filepath where the cry has been cached. Probably currently conflicts with get_audio_path()"""
     # just make it work with the default cry for now
+    pass
+
+
+def fetch_pokemon_cry_by_number(number: int) -> str:
     pass
 
 
@@ -53,7 +58,6 @@ def prompt_loop(context: Context):
                     "That number doesn't represent a pokemon known to the scientific community yet. Please try again."
                 )
             else:
-                print("Loading...")
                 poke_name = str(pb.APIResource("pokemon", directive))
                 play_cry(directive)
                 print("That was the cry of " + poke_name + " (#" + str(directive) + ")")
@@ -90,6 +94,9 @@ def cleanup() -> None:
 
 
 def main():
+
+    print(random.choice(os.listdir("./audio/cries-main/cries/pokemon/latest/")))
+
     context = Context()
     print("Hello from pokecallbunny!")
     prompt_loop(context)
