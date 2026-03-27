@@ -82,7 +82,7 @@ def fetch_pokemon_count() -> int:
 
 def gen_random_pokenumber(context: Context) -> int:
     """the get_random_pokenumber() function takes no arguments (currently) and returns a random pokemon's number from a pool of all current pokemon as fetched earlier from PokeAPI and stored in the context"""
-    return randrange(context.pokemon_count)
+    return random.randrange(context.pokemon_count)
 
 
 # TODO: add optional arguments of generations to include and only return a random pokemon from those generations.
