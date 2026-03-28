@@ -18,13 +18,31 @@ def get_audio_path(poke_number: int) -> str:
     return "./audio/cries-main/cries/pokemon/latest/" + str(poke_number) + ".ogg"
 
 
-def fetch_pokemon_cry_by_name(pokemon: str) -> str:
+def fetch_pokemon_by_name(name: str) -> dict:
     """downloads cries as needed from pokeAPI and returns the filepath where the cry has been cached. Probably currently conflicts with get_audio_path()"""
     # just make it work with the default cry for now
+
+    with open("./pokemon-data.json") as file:
+        pokemon_data = dict(json.loads(file.read()))
+        results = pokemon_data["results"]
+        for pokemon in results:
+            if pokemon["name"] == name:
+                url = pokemon["url"]
+                response = requests.get(url)
+                data = dict(json.loads(response.text))
+                return data
+        return "could not find match"
+
+
+def get_name_from_number():
     pass
 
 
-def fetch_pokemon_cry_by_number(number: int) -> str:
+def get_number_from_name():
+    pass
+
+
+def fetch_pokemon_by_number(number: int) -> str:
     pass
 
 
@@ -66,10 +84,16 @@ def prompt_loop(context: Context):
             poke_name = str(pb.APIResource("pokemon", poke_number))
             play_cry(poke_number)
             print("That was the cry of " + poke_name + " (#" + str(poke_number) + ")")
-        else:
+        elif directive == "help":
             print(
-                "Unrecognized command.\n  Type a Pokemon's name or ID \n  [r/rand/random] for random \n  [q, quit, exit] to quit"
+                "Type a Pokemon's name or ID \n  [r/rand/random] for random \n  [q, quit, exit] to quit"
             )
+        else:
+            print("Fetching Pokemon by name: " + directive)
+            data = fetch_pokemon_by_name(directive)
+            id = data["id"]
+            play_cry(int(id))
+            print("That was the cry of " + directive + "(#" + str(id) + ")")
 
 
 def fetch_pokemon_count() -> int:
@@ -95,8 +119,7 @@ def cleanup() -> None:
 
 def main():
 
-    print(random.choice(os.listdir("./audio/cries-main/cries/pokemon/latest/")))
-
+    # print(random.choice(os.listdir("./audio/cries-main/cries/pokemon/latest/")))
     context = Context()
     print("Hello from pokecallbunny!")
     prompt_loop(context)
