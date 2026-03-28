@@ -31,7 +31,7 @@ def fetch_pokemon_by_name(name: str) -> dict:
                 response = requests.get(url)
                 data = dict(json.loads(response.text))
                 return data
-        return "could not find match"
+        return "Could not find match"
 
 
 def get_name_from_number():
@@ -91,6 +91,9 @@ def prompt_loop(context: Context):
         else:
             print("Fetching Pokemon by name: " + directive)
             data = fetch_pokemon_by_name(directive)
+            if isinstance(data, str):
+                print(data)
+                continue
             id = data["id"]
             play_cry(int(id))
             print("That was the cry of " + directive + "(#" + str(id) + ")")
