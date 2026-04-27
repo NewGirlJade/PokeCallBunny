@@ -45,3 +45,32 @@ questions:
 		include fainted cries
 		ignore alternate forms
 		number of multiple choice options
+	Pokemon forms are best accessed though pokeapi by going to https://pokeapi.co/api/v2/pokemon-species/
+	note the use of species- that's important. Then the forms are at the bottom labeled as "varieties". At least for switchable varieties like tornadus.
+
+Data needed for this project:
+Core:
+list of pokemon
+	numbers
+	where to find their sound files
+	has_mega
+		where to find mega cry soundfile
+	alternate_forms
+		where to find alternate cry soundfile
+OR
+list of all pokemon including forms
+	- where to find their cry
+	- has_alternate_form
+	- form name (if other than base form) OR alternate name(s)
+	- connections to other pokemon (evolutions, pre-evolutions, alternate forms, mega evolutions)
+	- what generation the pokemon belongs to
+bonus:
+	records of successes & failures
+	history of guesses for spaced repitition
+	custom cry pool lists
+	where to find each form's picture(or pictures for pokemon with multiple forms that share a cry)
+	which pokemon all share the same sound file
+	
+	Glossary:
+		Form:
+		
