@@ -49,17 +49,6 @@ def non_alternate_forms():
     ]
 
 
-from dataclasses import dataclass
-
-
-@dataclass
-class Pokemon:
-    pokeID: int
-    pokeName: str
-    formName: str = ""
-    generation: int = 0
-
-
 def connect_to_database(path: str) -> tuple[sqlite3.Connection, sqlite3.Cursor]:
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
@@ -111,20 +100,24 @@ def main():
     con, cur = connect_to_database("./pokemondb.sql")
     create_table(con, cur)
 
-    pumpkaboo = Pokemon(
-        pokeID=42069,
-        pokeName="Pumpkaboo",
-        formName="Jumbo",
-        generation=6,
+    insert_new(
+        cur,
+        [
+            {
+                "pokeID": 618,
+                "pokeName": "Pikchu",
+                "formName": "Pika-at",
+                "generation": 6,
+            },
+            {
+                "pokeID": 222,
+                "pokeName": "mawlie",
+                "formName": "Mawlie-cute",
+                "generation": 1,
+            },
+        ],
     )
-    mawlie = Pokemon(
-        pokeID=19999,
-        pokeName="Mawile",
-        generation=2,
-    )
-
-    # insert_new(cur, [(618, "Pikchu", "Pika-at", 6), (222, "mawlie", "Mawlie-cute", 1)])
-    insert_new(cur, [pumpkaboo, mawlie])
+    # insert_new(cur, [pumpkaboo, mawlie])
     con.commit()
 
 
