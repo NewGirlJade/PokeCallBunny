@@ -49,7 +49,18 @@ def non_alternate_forms():
     ]
 
 
-def connect_to_database(path: str) -> tuple:
+from dataclasses import dataclass
+
+
+@dataclass
+class Pokemon:
+    pokeID: int
+    pokeName: str
+    formName: str = ""
+    generation: int = 0
+
+
+def connect_to_database(path: str) -> tuple[sqlite3.Connection, sqlite3.Cursor]:
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
     return (connection, cursor)
@@ -74,7 +85,14 @@ def load_pokemon_list() -> dict:
 
 def create_table(con, cur):
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS Pokemon(pokeID integer primary key, pokeName string not null, formName string, generation integer not null)"
+        """
+        CREATE TABLE IF NOT EXISTS Pokemon (
+            pokeID integer primary key,
+            pokeName string not null,
+            formName string,
+            generation integer not null
+        )
+        """
     )
 
 
@@ -84,7 +102,7 @@ def populate_table(con, cur):
 
 def insert_new(cur, data):
     cur.executemany(
-        "INSERT OR IGNORE INTO Pokemon (pokeID, pokeName, formName, generation) VALUES (?,?,?,?)",
+        "INSERT OR IGNORE INTO Pokemon (pokeID, pokeName, formName, generation) VALUES (:pokeID, :pokeName, :formName, :generation)",
         data,
     )
 
@@ -92,7 +110,21 @@ def insert_new(cur, data):
 def main():
     con, cur = connect_to_database("./pokemondb.sql")
     create_table(con, cur)
-    insert_new(cur, [(618, "Pikchu", "Pika-at", 6), (222, "mawlie", "Mawlie-cute", 1)])
+
+    pumpkaboo = Pokemon(
+        pokeID=42069,
+        pokeName="Pumpkaboo",
+        formName="Jumbo",
+        generation=6,
+    )
+    mawlie = Pokemon(
+        pokeID=19999,
+        pokeName="Mawile",
+        generation=2,
+    )
+
+    # insert_new(cur, [(618, "Pikchu", "Pika-at", 6), (222, "mawlie", "Mawlie-cute", 1)])
+    insert_new(cur, [pumpkaboo, mawlie])
     con.commit()
 
 
