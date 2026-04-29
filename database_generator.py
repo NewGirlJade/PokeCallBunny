@@ -113,7 +113,9 @@ def populate_pokemon_table(con: sqlite3.Connection, cur: sqlite3.Cursor):
     insert_new_pokemon(cur, tabledata)
 
 
-def insert_new_pokemon(cur, data):
+def insert_new_pokemon(cur: sqlite3.Cursor, data):
+    # data:list[dict{pokeID: int, pokeName: str, formName: str, generation: int}])-> None
+    # type definitions in python are so annoying.
     cur.executemany(
         "INSERT OR IGNORE INTO Pokemon (pokeID, pokeName, formName, generation) VALUES (:pokeID, :pokeName, :formName, :generation)",
         data,
