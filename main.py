@@ -131,14 +131,14 @@ def prompt_loop(context: Context):
                 play_cry(context, id)
             else:
                 print("No pokemon matching that name was found,")
-                allmons = get_forms_by_pokeName(context, directive)
+                allmons = sorted(get_forms_by_pokeName(context, directive).items())
                 if len(allmons) > 0 and len(allmons) < 100:
                     print(
                         "but the following similar entries might be what you're looking for:"
                     )
                     for pokemon in allmons:
                         print(pokemon)
-                print(str(len(allmons)), "similar entries.")
+                print(str(len(allmons)), "similar entries found.")
                 print("Please try again")
 
 
@@ -175,12 +175,17 @@ def get_base_form_id(context: Context, id: int) -> int:
 def get_forms_by_pokeName(context: Context, name: str) -> [(int,)]:
     """queries the database and returns a name and id for all pokemon similar to the name argument provided. Used when no direct match is found to a user input"""
     data = context.cur.execute(
-        "select pokeid, pokename, formname from pokemon where formname or PokeName like ?",
+        "select pokeid, pokename, formname from pokemon where PokeName like ?",
         ("%" + name + "%",),
     ).fetchall()
-    return [
-        (id, (formname if formname else pokename)) for (id, pokename, formname) in data
-    ]
+    data += context.cur.execute(
+        "select pokeid, pokename, formname from pokemon where formname like ?",
+        ("%" + name + "%",),
+    ).fetchall()
+
+    return {
+        id: (formname if formname else pokename) for (id, pokename, formname) in data
+    }
 
 
 def get_first_id_by_pokeName(context: Context, name: str) -> int:
