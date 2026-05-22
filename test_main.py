@@ -39,16 +39,37 @@ def test_gen_random_pokenumber(context):
 
 def test_get_pokemon_from_db(context):
     data = {
-        False: {"pokemon": {"name": None, "formName": None}, "baseID": None},
-        "string": {"pokemon": {"name": None, "formName": None}, "baseID": None},
-        "pikachu": {"pokemon": {"name": None, "formName": None}, "baseID": None},
-        -1: {"pokemon": {"name": None, "formName": None}, "baseID": None},
-        0: {"pokemon": {"name": None, "formName": None}, "baseID": None},
-        1: {"pokemon": {"name": "bulbasaur", "formName": None}, "baseID": 1},
-        150: {"pokemon": {"name": "mewtwo", "formName": None}, "baseID": 150},
+        False: {
+            "pokemon": {"name": None, "formName": None},
+            "baseID": None,
+        },  # test that a bool instead of a number produces expected output
+        "string": {
+            "pokemon": {"name": None, "formName": None},
+            "baseID": None,
+        },  # test that a string instead of a number produces expected output
+        "pikachu": {
+            "pokemon": {"name": None, "formName": None},
+            "baseID": None,
+        },  # slightly redundant, but specially testing that even a valid pokemon name still doesn't count as a pokeNumber
+        -1: {
+            "pokemon": {"name": None, "formName": None},
+            "baseID": None,
+        },  # testing that negative numbers return the expexted output
+        0: {
+            "pokemon": {"name": None, "formName": None},
+            "baseID": None,
+        },  # testing that 0 returns as expected
+        1: {
+            "pokemon": {"name": "bulbasaur", "formName": None},
+            "baseID": 1,
+        },  # this is a valid poke ID and the output expected therefrom
+        150: {
+            "pokemon": {"name": "mewtwo", "formName": None},
+            "baseID": 150,
+        },  # this is another valid poke ID and the output expected therefrom
         10044: {
             "pokemon": {"name": "mewtwo", "formName": "mewtwo-mega-y"},
-            "baseID": 150,
+            "baseID": 150,  # This is here especially to make sure get_base_form_id() returns correct output
         },
     }
     for num, result in data.items():
