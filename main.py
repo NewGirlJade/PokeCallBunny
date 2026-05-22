@@ -9,7 +9,11 @@ class Context:
     """object to handle program state"""
 
     def __init__(self):
-        self.con = sqlite3.connect("pokemon.db")
+        self.dbname = "pokemon.db"
+        if not os.path.isfile(self.dbname):
+            raise NameError("Database " + self.dbname + " not found. Exiting program")
+            quit()
+        self.con = sqlite3.connect(self.dbname)
         self.cur = self.con.cursor()
 
     def __enter__(self):
@@ -46,8 +50,7 @@ def play_cry(context: Context, poke_number: int, **kwargs) -> None:
             # TODO: add web request to pokeAPI to try to download sound file if not found
             print(
                 "audio path for alternate form  ("
-                + form_name
-                + ", #"
+                + "#"
                 + str(poke_number)
                 + ") not found, defaulting to base form."
             )
@@ -62,7 +65,7 @@ def play_cry(context: Context, poke_number: int, **kwargs) -> None:
                 time.sleep(0.01)
             shouldStop = True
             if kwargs.get("should_guess"):
-                shouldStop = request_guess(poke_name, form_name)
+                shouldStop = request_guess(context, poke_name, form_name)
         print(
             "That was the cry of "
             + (form_name if form_name else poke_name).capitalize()
@@ -72,7 +75,7 @@ def play_cry(context: Context, poke_number: int, **kwargs) -> None:
         )
 
 
-def request_guess(source_pokename: str, source_formname: str) -> bool:
+def request_guess(context: Context, source_pokename: str, source_formname: str) -> bool:
     """this function is called from the play_cry() function if "should_guess = true" is passed as a keyword argument. It compares info about the a random source pokemon to a user input string and gives feedback based on the Levenshtein distance between the two"""
 
     print("make a guess (enter r to repeat or enter to skip)")
@@ -93,13 +96,15 @@ def request_guess(source_pokename: str, source_formname: str) -> bool:
             case 0:
                 print("Exactly!")
                 return True
-            case 1:
-                print("Correct!")
-                return True
-            case 2 | 3 | 4:
-                print("Almost right! Try again?")
-            case 5 | 6:
-                print("Not quite. Try again?")
+            case 1 | 2 | 3:
+                print("Almost right! Did you mean one of these?")
+                hints = []
+                all_mons = get_all_pokemon(context)
+                for name, formname in all_mons:
+                    a = formname if formname else name
+                    if distance(a, guess) < 4:
+                        hints.append(a)
+                print(hints)
             case _:
                 print("Sorry, that's not it. Try again?")
 
@@ -160,16 +165,23 @@ def gen_random_pokenumber(context: Context) -> int:
 
 def get_base_form_id(context: Context, id: int) -> int:
     """this function takes a pokemon's ID and returns the id of its base form."""
-    pokename = context.cur.execute(
-        "select pokeName from pokemon where PokeID = ?", (id,)
-    ).fetchone()
-    (base_id,) = context.cur.execute(
-        "select pokeid from pokemon where pokename = ?", pokename
-    ).fetchone()
-    return base_id
+    try:
+        pokename = context.cur.execute(
+            "select pokeName from pokemon where PokeID = ?", (id,)
+        ).fetchone()
+        (base_id,) = context.cur.execute(
+            "select pokeid from pokemon where pokename = ?", pokename
+        ).fetchone()
+        return base_id
+    except:
+        return None
 
 
 # TODO: I feel like this is the usecase for a join but I'm not very confident with those yet and this works.
+
+
+def get_all_pokemon(context: Context):
+    return context.cur.execute("select pokename, formname from pokemon").fetchall()
 
 
 def get_forms_by_pokeName(context: Context, name: str) -> [(int,)]:
@@ -216,9 +228,13 @@ def get_pokemon_by_id(context: Context, id: int) -> dict:
     return names
 
 
+def greet():
+    print("Hello from pokecallbunny!")
+
+
 def main():
     with Context() as context:
-        print("Hello from pokecallbunny!")
+        greet()
         prompt_loop(context)
 
 
