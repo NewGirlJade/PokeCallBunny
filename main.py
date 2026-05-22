@@ -5,13 +5,21 @@ import sqlite3
 from Levenshtein import distance
 
 
+class PathError(Exception):
+    pass
+
+
 class Context:
     """object to handle program state"""
 
     def __init__(self):
         self.dbname = "pokemon.db"
         if not os.path.isfile(self.dbname):
-            raise NameError("Database " + self.dbname + " not found. Exiting program")
+            raise PathError(
+                "Database "
+                + self.dbname
+                + " not found. You may need to build the database by running database_generator.py . Exiting program"
+            )
             quit()
         self.con = sqlite3.connect(self.dbname)
         self.cur = self.con.cursor()
