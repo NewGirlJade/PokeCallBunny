@@ -11,3 +11,8 @@ dependencies = [
     "pyogg>=0.6.14a1",
     "pyopenal>=0.7.11a1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
