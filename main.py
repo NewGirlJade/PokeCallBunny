@@ -97,12 +97,9 @@ def request_guess(context: Context, source_pokename: str, source_formname: str) 
             quit()
         if guess == "r":
             return False
-        if guess == "help" or guess == "h":
-            print("make a guess ([r] to repeat or [enter] to skip)")
-        source = source_formname if source_formname else source_pokename
-        if guess == "" or guess == "q" or guess == "s":
+        if guess == "" or guess == "s":
             return True
-
+        source = source_formname if source_formname else source_pokename
         similarity = distance(source, guess)
         match similarity:
             case 0:
