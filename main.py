@@ -3,6 +3,7 @@ import time
 import os, os.path
 import sqlite3
 from Levenshtein import distance
+import random
 
 
 class PathError(Exception):
@@ -90,16 +91,25 @@ def play_cry(context: Context, poke_number: int, **kwargs) -> None:
 def request_guess(context: Context, source_pokename: str, source_formname: str) -> bool:
     """this function is called from the play_cry() function if "should_guess = true" is passed as a keyword argument. It compares info about the a random source pokemon to a user input string and gives feedback based on the Levenshtein distance between the two"""
 
-    print("[r] to repeat, [s/enter] to skip, q to quit")
+    print("r to repeat, s/enter to skip, q to quit, hint[x] for multiple-choice")
     while True:
+        source = source_formname if source_formname else source_pokename
         guess = input("Guess: ").lower()
+        while guess == "hint" or guess == "h":
+            guess = show_hints(context, 10, source)
+        while (
+            guess.startswith("hint") and guess.replace(" ", "").lstrip("hint").isdigit()
+        ) or (
+            guess.startswith("h") and guess.replace(" ", "").lstrip("hint").isdigit()
+        ):
+            hints_requested = int(guess.lstrip("hint"))
+            guess = show_hints(context, hints_requested, source)
         if guess == "q":
             quit()
         if guess == "r":
             return False
         if guess == "" or guess == "s":
             return True
-        source = source_formname if source_formname else source_pokename
         similarity = distance(source, guess)
         match similarity:
             case 0:
@@ -115,13 +125,31 @@ def request_guess(context: Context, source_pokename: str, source_formname: str) 
                         hints.append(a)
                 print(hints)
             case _:
-                if distance(source_pokename, guess) < 5:
+                if distance(source_pokename, guess) < 3:
                     print(
-                        "Maybe you meant one of these alternate forms? Some of them sound exactly the same and if that's the case for you I'm super sorry- I'm working on a way to catch that."
+                        "Pretty much right! Some of the forms have identical cries to the base versions and I haven't found a good way to resolve that so I'll give it to you."
                     )
-                    print(get_forms_by_pokeName(context, source_pokename))
-                    continue
+                    return True
                 print("sorry, that's not it. Try again?")
+
+
+def show_hints(context, hints_requested, target_pokemon):
+    while hints_requested > 20 or hints_requested < 2:
+        userinput = input("I refuse. Enter a reasonable number or make a guess.\n")
+        if not userinput.isdigit():
+            return userinput
+        hints_requested = int(userinput)
+    options = [target_pokemon]
+    for count in range(hints_requested - 1):
+        random_pokenumber = gen_random_pokenumber(context)
+        pokename, formname = get_pokemon_by_id(context, random_pokenumber).values()
+        options.append(formname if formname else pokename)
+    random.shuffle(options)
+    print("It's one of...")
+    for index, item in enumerate(options):
+        print(str(index) + ": " + str(item))
+    guess = input("Guess: ").lower()
+    return guess
 
 
 def prompt_loop(context: Context):
@@ -131,6 +159,8 @@ def prompt_loop(context: Context):
     )
     while True:
         directive = input().lower()
+        if directive == "":
+            continue
         if directive == "q" or directive == "quit" or directive == "exit":
             quit()
         elif directive.isdigit():
