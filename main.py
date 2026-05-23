@@ -137,7 +137,7 @@ def prompt_loop(context: Context):
             directive = int(directive)
             play_cry(context, directive)
         elif directive == "random" or directive == "rand" or directive == "r":
-            poke_number = 10154  # gen_random_pokenumber(context)
+            poke_number = gen_random_pokenumber(context)
             play_cry(context, poke_number, should_guess=True)
         # TODO: add a directive to list all forms of a species
         elif directive == "help" or directive == "h":
