@@ -23,12 +23,16 @@ class Context:
             quit()
         self.con = sqlite3.connect(self.dbname)
         self.cur = self.con.cursor()
+        self.gen = get_all_valid_generations(self)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         oal_cleanup()
+
+    def print_gens(self):
+        print("Selected generations: " + str(self.gen))
 
 
 def oal_cleanup() -> None:
@@ -86,19 +90,16 @@ def play_cry(context: Context, poke_number: int, **kwargs) -> None:
 def request_guess(context: Context, source_pokename: str, source_formname: str) -> bool:
     """this function is called from the play_cry() function if "should_guess = true" is passed as a keyword argument. It compares info about the a random source pokemon to a user input string and gives feedback based on the Levenshtein distance between the two"""
 
-    print("make a guess (enter r to repeat or enter to skip)")
+    print("[r] to repeat, [s/enter] to skip, q to quit")
     while True:
-        guess = input().lower()
+        guess = input("Guess: ").lower()
         if guess == "q":
             quit()
         if guess == "r":
             return False
-        if guess == "help":
-            print("make a guess (enter r to repeat or enter to skip)")
-        source = source_formname if source_formname else source_pokename
-        if guess == "":
+        if guess == "" or guess == "s":
             return True
-
+        source = source_formname if source_formname else source_pokename
         similarity = distance(source, guess)
         match similarity:
             case 0:
@@ -133,10 +134,53 @@ def prompt_loop(context: Context):
             poke_number = gen_random_pokenumber(context)
             play_cry(context, poke_number, should_guess=True)
         # TODO: add a directive to list all forms of a species
-        elif directive == "help":
+        elif directive == "help" or directive == "h":
             print(
-                "Type a Pokemon's name or ID \n  [r/rand/random] for random \n  [q, quit, exit] to quit"
+                """
+   Type a Pokemon's name or ID
+   [q, quit, exit] to quit
+   [r/rand/random] for random
+   [gen] or [gen show] to see which generations [random] will use
+   [gen set (numbers)] or [gen (numbers)] to select generations
+   [gen add] to add generations to selection
+   [gen rm] to remove generations
+   [gen all] or [gen reset] to reset selections"""
             )
+        elif str(directive) == "gen" or str(directive).startswith("gen "):
+            directive = directive.lstrip("gen ").replace(",", " ").split(" ")
+            cleaned_list = list(filter(None, directive))
+            generations = []
+            mode = ""
+            for item in cleaned_list:
+                try:
+                    new_item = int(item)
+                    if check_generation_validity(context, new_item):
+                        generations.append(new_item)
+                except ValueError:
+                    match item:
+                        case "set" | "add" | "rm" | "show" | "all" | "reset":
+                            mode = item
+            generations = set(generations)
+            if mode == "":
+                if cleaned_list == []:
+                    mode = "show"
+                else:
+                    mode = "set"
+            match mode:
+                case "set":
+                    context.gen = generations
+                    context.print_gens()
+                case "add":
+                    context.gen = context.gen.union(generations)
+                    context.print_gens()
+                case "rm":
+                    context.gen = context.gen.difference(generations)
+                    context.print_gens()
+                case "show":
+                    context.print_gens()
+                case "all" | "reset":
+                    context.gen = get_all_valid_generations(context)
+                    context.print_gens()
         else:
             print("Fetching Pokemon call by name: " + directive)
             id = get_first_id_by_pokeName(context, directive)
@@ -157,8 +201,12 @@ def prompt_loop(context: Context):
 
 def gen_random_pokenumber(context: Context) -> int:
     """this function returns a random pokemon's ID from pokemon.db"""
+    placeholders = ", ".join(
+        "?" * len(context.gen)
+    )  # This is very ick but I'm not actually injecting strings into the query, just the placeholder questionmarks, and apparently this is the ideomatic solution.
     (id,) = context.cur.execute(
-        "select pokeid from pokemon order by random() limit 1"
+        f"select pokeid from pokemon where generation in ({placeholders}) order by random() limit 1",
+        tuple(context.gen),
     ).fetchone()
     return id
 
@@ -167,8 +215,6 @@ def gen_random_pokenumber(context: Context) -> int:
 # random pokemon from those generations. Or, probably better, make commands
 # that will set the generations to include in the context and have this
 # function check when generating a random pokemon.
-
-# TODO: add option to exclude alternate forms
 
 
 def get_base_form_id(context: Context, id: int) -> int:
@@ -183,9 +229,6 @@ def get_base_form_id(context: Context, id: int) -> int:
         return base_id
     except:
         return None
-
-
-# TODO: I feel like this is the usecase for a join but I'm not very confident with those yet and this works.
 
 
 def get_all_pokemon(context: Context):
@@ -206,6 +249,25 @@ def get_forms_by_pokeName(context: Context, name: str) -> [(int,)]:
     return {
         id: (formname if formname else pokename) for (id, pokename, formname) in data
     }
+
+
+def check_generation_validity(context: Context, gen: int) -> bool:
+    return bool(
+        context.cur.execute(
+            "select 1 from pokemon where generation = ?", (gen,)
+        ).fetchone()
+    )
+
+
+def get_all_valid_generations(context: Context) -> set:
+    genlist = []
+    gen = 1
+    while True:
+        if check_generation_validity(context, gen):
+            genlist.append(gen)
+            gen += 1
+        else:
+            return set(genlist)
 
 
 def get_first_id_by_pokeName(context: Context, name: str) -> int:
