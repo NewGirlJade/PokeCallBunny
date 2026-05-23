@@ -115,7 +115,13 @@ def request_guess(context: Context, source_pokename: str, source_formname: str) 
                         hints.append(a)
                 print(hints)
             case _:
-                print("Sorry, that's not it. Try again?")
+                if distance(source_pokename, guess) < 5:
+                    print(
+                        "Maybe you meant one of these alternate forms? Some of them sound exactly the same and if that's the case for you I'm super sorry- I'm working on a way to catch that."
+                    )
+                    print(get_forms_by_pokeName(context, source_pokename))
+                    continue
+                print("sorry, that's not it. Try again?")
 
 
 def prompt_loop(context: Context):
@@ -131,7 +137,7 @@ def prompt_loop(context: Context):
             directive = int(directive)
             play_cry(context, directive)
         elif directive == "random" or directive == "rand" or directive == "r":
-            poke_number = gen_random_pokenumber(context)
+            poke_number = 10154  # gen_random_pokenumber(context)
             play_cry(context, poke_number, should_guess=True)
         # TODO: add a directive to list all forms of a species
         elif directive == "help" or directive == "h":
