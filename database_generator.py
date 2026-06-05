@@ -4,51 +4,6 @@ import os, os.path
 import sqlite3
 
 
-def non_alternate_forms():
-    """this is a list of pokemon with hyphens in their names that don't have alternate forms. it's neccesary because of how I'm parsing pokemon form data into the sql database"""
-    return [
-        29,
-        32,
-        122,
-        250,
-        439,
-        474,
-        772,
-        782,
-        783,
-        784,
-        785,
-        786,
-        787,
-        788,
-        866,
-        984,
-        985,
-        986,
-        987,
-        988,
-        989,
-        990,
-        991,
-        992,
-        993,
-        994,
-        995,
-        1001,
-        1002,
-        1003,
-        1004,
-        1005,
-        1006,
-        1009,
-        1010,
-        1020,
-        1021,
-        1022,
-        1023,
-    ]
-
-
 def connect_to_database(path: str) -> tuple[sqlite3.Connection, sqlite3.Cursor]:
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
@@ -62,11 +17,13 @@ def create_tables(con: sqlite3.Connection, cur: sqlite3.Cursor):
 
 
 def load_pokemon_list() -> dict:
-    response = requests.get("https://pokeapi.co/api/v2/pokemon/?limit=10000")
+    """returns a dict mapping the name of every pokemon form in the PokeAPI to the url of its data"""
+    response = requests.get("https://pokeapi.co/api/v2/pokemon/?offset=0&limit=10000")
     return dict(json.loads(response.text))["results"]
 
 
 def load_generation_lists() -> dict:
+    """returns a map of all pokemon generations currently in the PokeAPI"""
     gen_lists = {}
     response = requests.get("https://pokeapi.co/api/v2/generation/")
     generations = dict(json.loads(response.text))["results"]
@@ -80,36 +37,37 @@ def load_generation_lists() -> dict:
 
 
 def populate_pokemon_table(con: sqlite3.Connection, cur: sqlite3.Cursor):
+    print("Populating table:")
     pokemon_list = load_pokemon_list()
     generation_lists = load_generation_lists()
     tabledata = []
-    skip_list = non_alternate_forms()
     for pokemon in pokemon_list:
+        apidata = dict(json.loads(requests.get(pokemon["url"]).text))
+        species_name = apidata["species"]["name"]
+        form_name = apidata["forms"][0]["name"]
         output = {}
         pokeID = (
             pokemon["url"].replace("https://pokeapi.co/api/v2/pokemon/", "").strip("/")
         )
         output["pokeID"] = int(pokeID)
-        output["formName"] = None
-        output["pokeName"] = pokemon["name"]
+        output["formName"] = form_name if species_name != form_name else None
+        output["pokeName"] = species_name
         output["generation"] = None
-        if "-" in output["pokeName"] and output["pokeID"] not in skip_list:
-            output["formName"] = output["pokeName"]
-            output["pokeName"], _, _ = output["pokeName"].partition("-")
-            # I'm special casing these two pokemon in as they have both an alternate form and a hyphen in their name so it breaks the parsing logic a little.
-            if output["pokeID"] == 10146:
-                output["pokeName"] = "kommo-o"
-                output["formName"] = "kommo-o-totem"
-            if output["pokeID"] == 10168:
-                output["pokeName"] = "mr-mime"
-                output["formName"] = "mr-mime-galar"
         for gen in generation_lists:
             if output["pokeName"] in generation_lists[gen]:
                 output["generation"] = gen
                 break
         if output["generation"] == None:
             raise ValueError("no generation found for ", output)
+        output["baseformid"] = (
+            apidata["species"]["url"]
+            .replace("https://pokeapi.co/api/v2/pokemon-species/", "")
+            .strip("/")
+        )
+        output["latestcry"] = apidata.get("cries", {}).get("latest")
+        output["legacycry"] = apidata.get("cries", {}).get("legacy")
         tabledata.append(output)
+        print(output)
     insert_new_pokemon(cur, tabledata)
 
 
@@ -117,7 +75,7 @@ def insert_new_pokemon(cur: sqlite3.Cursor, data):
     # data:list[dict{pokeID: int, pokeName: str, formName: str, generation: int}])-> None
     # type definitions in python are so annoying.
     cur.executemany(
-        "INSERT OR IGNORE INTO Pokemon (pokeID, pokeName, formName, generation) VALUES (:pokeID, :pokeName, :formName, :generation)",
+        "INSERT OR IGNORE INTO Pokemon (pokeID, pokeName, formName, generation, baseformid, latestcry, legacycry) VALUES (:pokeID, :pokeName, :formName, :generation, :baseformid, :latestcry, :legacycry)",
         data,
     )
 
