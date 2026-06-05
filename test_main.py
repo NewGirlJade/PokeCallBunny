@@ -1,4 +1,4 @@
-import main
+import core as main
 import pytest
 import sqlite3
 
@@ -92,3 +92,6 @@ def test_play_cry(context, capsys):
             or stdout.startswith("That was the cry of")
             or stdout.startswith("audio path for alternate form")
         )
+
+
+# TODO: split these three options into separate tests
