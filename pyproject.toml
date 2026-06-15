@@ -1,7 +1,7 @@
 [project]
 name = "pokecallbunny"
-version = "0.1.0"
-description = "Memorize the Pokemon's Cries"
+version = "0.9.0"
+description = "Memorize the Pokemon sounds"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS pokemon (
+CREATE TABLE pokemon (
 pokeid integer PRIMARY KEY,--Pokemon ID number as found on https://pokeapi.co/api/v2/pokemon
 pokename string NOT NULL,--Pokemon base form name
 formname string, --none if the pokemon only has one form

@@ -6,5 +6,9 @@
 </head>
 <body>
     <h1>Hey Ben</h1>
+    <button>Click for candy</button>
+    <script>
+        fetch("/api/random").then((res)=>{res.json().then((res)=>{console.log(res)})})
+    </script>
 </body>
 </html>

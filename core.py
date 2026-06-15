@@ -70,6 +70,9 @@ def play_cry(context: Context, poke_number: int, **kwargs) -> None:
             poke_number = get_base_form_id(context, poke_number)
             audio_path = get_audio_path(poke_number)
             form_name = None
+        if not os.path.isfile(audio_path):
+            print("Audio path not found for " + str(poke_number))
+            return
         shouldStop = False
         while not shouldStop:
             audio = oalOpen(audio_path)
@@ -274,7 +277,8 @@ def get_base_form_id(context: Context, id: int) -> int:
             "select baseformid from pokemon where pokeid = ?", (id,)
         ).fetchone()
         return base_id
-    except (NameError, TypeError):
+    except:
+        print("base form not found for " + str(id))
         return None
 
 
@@ -328,20 +332,25 @@ def get_first_id_by_pokeName(context: Context, name: str) -> int:
             (id,) = context.cur.execute(
                 "select pokeid from pokemon where FormName = ?", (name,)
             ).fetchone()
-        except TypeError:
+        except:
             id = None
+    except:
+        id = None
     return id
 
 
 def get_pokemon_by_id(context: Context, id: int) -> dict:
     """queries the database for a pokemon ID and returns a dictionary with the name and formname for that ID, if they're found"""
+    names = {"name": None, "formName": None}
+    if not isinstance(id, int):
+        return names
     try:
         name, formName = context.cur.execute(
             "select pokename, formname from pokemon where PokeID = ?", (id,)
         ).fetchone()
         names = {"name": name, "formName": formName}
-    except TypeError:
-        names = {"name": None, "formName": None}
+    except:
+        pass
     return names
 
 
